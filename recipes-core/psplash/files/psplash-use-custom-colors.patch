@@ -1,0 +1,28 @@
+From 59aeabd86fafd03dea3230b380eaaf2dd2bcd291 Mon Sep 17 00:00:00 2001
+From: Michael Brunner <michael.brunner@kontron.com>
+Date: Fri, 24 Mar 2017 11:37:53 +0100
+Subject: [PATCH] psplash: Use custom colors
+
+Use custom colors for psplash
+
+Signed-off-by: Michael Brunner <michael.brunner@kontron.com>
+---
+ psplash-colors.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/psplash-colors.h b/psplash-colors.h
+index d701089..a6a5992 100644
+--- a/psplash-colors.h
++++ b/psplash-colors.h
+@@ -20,7 +20,7 @@
+ #define _HAVE_PSPLASH_COLORS_H
+ 
+ /* This is the overall background color */
+-#define PSPLASH_BACKGROUND_COLOR 0xec,0xec,0xe1
++#define PSPLASH_BACKGROUND_COLOR 0xff,0xff,0xff
+ 
+ /* This is the color of any text output */
+ #define PSPLASH_TEXT_COLOR 0x6d,0x6d,0x70
+-- 
+2.7.4
+

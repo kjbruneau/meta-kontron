@@ -1,0 +1,37 @@
+From 943eb9cf0effc2b918888de6c7c3228ef466b394 Mon Sep 17 00:00:00 2001
+From: Michael Brunner <michael.brunner@kontron.com>
+Date: Fri, 23 Nov 2018 11:05:04 +0100
+Subject: [PATCH] init-live.sh: avoid warnings
+
+This patch provides a type option in the case of mounting an ext4
+file system in order to prevent a warning by the driver.
+Furthermore it removes the --quiet option from udevadm which is
+not supported anymore.
+
+Signed-off-by: Michael Brunner <michael.brunner@kontron.com>
+---
+ meta/recipes-core/initrdscripts/files/init-live.sh | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/meta/recipes-core/initrdscripts/files/init-live.sh b/meta/recipes-core/initrdscripts/files/init-live.sh
+index 46cab6c..54d045a 100644
+--- a/init-live.sh
++++ b/init-live.sh
+@@ -164,7 +164,13 @@ mount_and_boot() {
+     mkdir $ROOT_MOUNT
+     mknod /dev/loop0 b 7 0 2>/dev/null
+ 
+-    if ! mount -o rw,loop,noatime,nodiratime /run/media/$ROOT_DISK/$ISOLINUX/$ROOT_IMAGE $ROOT_MOUNT ; then
++    # If root image is ext4 pass the type explicitely to prevent warning
++    TYPE=`blkid /run/media/$ROOT_DISK/$ISOLINUX/$ROOT_IMAGE $ROOT_MOUNT | sed -e 's|.*TYPE="\(\w*\)".*|\1|'`
++    if [ "$TYPE" = "ext4" ]; then
++        MOUNTOPT="-t ext4"
++    fi
++
++    if ! mount -o rw,loop,noatime,nodiratime $MOUNTOPT /run/media/$ROOT_DISK/$ISOLINUX/$ROOT_IMAGE $ROOT_MOUNT ; then
+ 	fatal "Could not mount rootfs image"
+     fi
+ 
+-- 
+2.7.4
+

@@ -1,0 +1,373 @@
+meta-kontron documentation
+==========================
+
+This is the base (meta) layer that contains various 3-rd party and Kontron
+software which is common for all x86 boards produced by Kontron Europe.
+
+The support of particular board is provided by corresponding BSP layer for this
+board (will be labeled as a meta-bsp layer further in text). Without this
+meta-bsp layer it is not possible to build meta-kontron.
+
+The main features/goals of the meta-kontron layer are:
+ - provide a set of librarires/tools/applications to check the functionality of
+   arbitrary Kontron board;
+ - provide a light-weight and convenient desktop environment (XFCE) to
+   facilitate the interaction with the system for the wide range of users;
+ - collect and keep in one place a code which is produced by Kontron and which
+   is common for all boards, like PLD drivers, KEAPI library and fixes/patches
+   for Yocto itself.
+
+By contrast, the meta-bsp layer is intended to provide support for particular
+board and contains board specific configuration files, drivers and
+fixes/patches.
+
+
+Compliance
+----------
+
+No steps have been taken to make the meta-kontron and meta-bsp layers compliant
+with the Yocto Project requirements, which are listed here:
+
+  https://www.yoctoproject.org/webform/yocto-project-compatible-registration
+
+
+Requirements/Dependencies
+-------------------------
+
+1. In order to be able to successfully run a build, following requirements to
+the host development system shall be met:
+  https://www.yoctoproject.org/docs/current/ref-manual/ref-manual.html#ref-manual-system-requirements
+
+NOTE: Please install all missing packages, that are listed for your specific
+distribution!
+
+This process can be facilitated by using a Docker, for which an example script
+to set up the environment is provided in the source/dockerbuild directory.
+Please read the included README for more information.
+
+2. After the development environment is configured, following 3-rd party base
+layers shall be downloaded and integrated into it to make it possible to
+build/use the provided meta-kontron and meta-bsp layers:
+
+  URI: git://git.yoctoproject.org/poky.git
+  branch: honister
+
+  URI: git://git.yoctoproject.org/meta-intel
+  layers: intel
+  branch: honister
+
+  URI: git://git.openembedded.org/meta-openembedded
+  layers: openembedded
+  branch: honister
+
+  URI: git://git.yoctoproject.org/meta-security
+  branch: honister
+
+  git://github.com/kraj/meta-clang
+  branch: honister
+
+NOTE: the meta-openembedded layer:
+- provides XFCE and 3-rd party utilities to evaluate functionality of the board
+  and BSP. This software is mandatory for kontron-test-image;
+- contains IEEE1588 (PTP) stacks/libraries;
+- contains various patches for "vanilla" packages from Yocto. E.g. latest fixes
+  for syslinux, initrdscripts, udev and efibootmgr without which it may be
+  impossible to boot Yocto on the board.
+
+This can be done either by downloading appropriate sources in form of tar
+archives and unpacking them on the host development system:
+
+  wget http://downloads.yoctoproject.org/releases/yocto/yocto-3.4/poky-f6d1126fff213460dc6954a5d5fc168606d76b66.tar.bz2
+  wget http://downloads.yoctoproject.org/releases/yocto/yocto-3.4/meta-intel-90170cf85fe35b4e8dc00eee50053c0205276b63.tar.bz2
+  tar xjvf meta-intel-90170cf85fe35b4e8dc00eee50053c0205276b63.tar.bz2
+  wget http://downloads.yoctoproject.org/releases/yocto/yocto-3.4/meta-openembedded-f2152d79043601eacb70da1a3ab36f5ac56f3e28.tar.bz2
+  tar xjvf meta-openembedded-f2152d79043601eacb70da1a3ab36f5ac56f3e28.tar.bz2
+  wget http://git.yoctoproject.org/cgit.cgi/meta-security/snapshot/fb77606aef461910db4836bad94d75758cc2688c.tar.bz2
+  tar xjvf fb77606aef461910db4836bad94d75758cc2688c.tar.bz2
+  mv fb77606aef461910db4836bad94d75758cc2688c meta-security
+  wget https://github.com/kraj/meta-clang/archive/fc5389393adb005b519e488e9e6be4fc5791239c.zip
+  unzip fc5389393adb005b519e488e9e6be4fc5791239c.zip
+  mv meta-clang-fc5389393adb005b519e488e9e6be4fc5791239c meta-clang
+
+or by cloning corresponding git repositories:
+
+  git clone git://git.yoctoproject.org/poky.git -b honister
+  git clone git://git.yoctoproject.org/meta-intel -b honister
+  git clone git://git.openembedded.org/meta-openembedded -b honister
+  git clone git://git.yoctoproject.org/meta-security -b honister
+  git clone git://github.com/kraj/meta-clang -b honister
+
+Building the meta-kontron and meta-bsp layers
+---------------------------------------------
+
+1. Make sure that the development environment is properly configured and all
+required 3-rd party base layers are installed.
+
+2. Install a "Build" module for perl. For example:
+  Directly through cpan:
+  $ sudo cpan
+  $ install Module::Build
+  Or by package managers for Fedora linux:
+  $ sudo dnf install perl-Module-Build
+  For Ubuntu linux:
+  $ sudo apt-get install libmodule-build-perl
+
+3. Deploy the archives with meta-kontron and meta-bsp layers to the development
+host and unpack them. E.g.:
+
+  tar xjvf some/path/to/layer/tarballs/some-kontron-board-yocto-bsp_honister-26.0.0.tar.gz
+
+4. Run oe-init-build-env script:
+
+  source oe-init-build-env
+
+  If available, the sample configuration can be used. In this case the steps 5
+  to 7 can be skipped for a default image configuration.
+
+  TEMPLATECONF=meta-kontron-some-board/conf/ source oe-init-build-env
+
+5.  In the conf/local.conf the right MACHINE value has to be set in order to
+build an image that fits to the target hardware. Please have a look at the
+README in the corresponding product specific BSP package (meta-bsp layer). E.g.
+
+  MACHINE = "kontron-some-board"
+
+6. In order to manually register the new meta-layer to the build system, add the
+location of the meta-kontron and meta-bsp layers to the bblayers.conf file,
+along with the layers these layers depend on. In other words, add full paths to
+previously installed meta-yocto, meta-intel, meta-openembedded, meta-kontron
+and meta-bsp layers to conf/bblayers.conf. Corresponding section of the file
+should look like this:
+
+  BBLAYERS ?= " \
+        /full/path/to/poky-honister-26.0.0/meta \
+        /full/path/to/poky-honister-26.0.0/meta-poky \
+        /full/path/to/poky-honister-26.0.0/meta-yocto-bsp \
+        /full/path/to/meta-openembedded/meta-filesystems \
+        /full/path/to/meta-openembedded/meta-gnome \
+        /full/path/to/meta-openembedded/meta-multimedia \
+        /full/path/to/meta-openembedded/meta-networking \
+        /full/path/to/meta-openembedded/meta-oe \
+        /full/path/to/meta-openembedded/meta-perl \
+        /full/path/to/meta-openembedded/meta-python \
+        /full/path/to/meta-openembedded/meta-xfce \
+        /full/path/to/meta-security \
+        /full/path/to/meta-security/meta-tpm \
+        /full/path/to/meta-intel \
+        /full/path/to/meta-clang \
+        /full/path/to/meta-kontron \
+        /full/path/to/meta-kontron-some-board \
+        "
+
+7. The LICENSE_FLAGS_WHITELIST in conf/local.conf does not contain the
+commercial license as default.
+
+If additional commercial components, like video codecs, should be integrated
+into images, a "commercial" license should be defined in conf/local.conf as
+well. For example:
+
+  LICENSE_FLAGS_WHITELIST += " commercial"
+
+The reason for such actions is to prevent the image from including anything
+that might violate the license terms. Please refer to corresponding license
+files included in the specific packages for details.
+
+8. Run image build (it's possible to build kontron-test-image,
+   core-image-sato or some other image):
+
+  bitbake kontron-test-image
+
+############################################################################
+# WARNING: The kontron-test-image is for product evaluation and testing!   #
+#          It does not incorporate any security features and is accessible #
+#          through network, graphical interface and serial console as      #
+#          root without password.                                          #
+#          Never use this image in an untrusted environment!               #
+############################################################################
+
+
+Installing and booting an image
+-------------------------------
+
+The image created using the previous steps can be found in the following
+directory:
+
+  build/tmp/deploy/images
+
+A pre-built version of the image for particular BSP should be also available
+separately on the Kontron customer section:
+
+  https://emdcustomersection.kontron.com
+
+The image can be deployed to a mass storage device like a SATA disk, a USB
+stick or a SD card.
+
+WIC images can be written to a target device using bmaptool. This tool will
+also extract compressed images on the fly while writing:
+
+  # bmaptool copy --bmap kontron-test-image-*.wic.bmap kontron-test-image-*.wic.bz2 TARGET_DEVICE
+
+TARGET_DEVICE is the device node for the device that should contain the image
+(e.g. /dev/sdd for SATA disk and USB stick or /dev/mmcblk0 for an SD card).
+Please double check you are using the correct device as all data on that device
+will be erased.
+
+WIC images may also be written using the dd utility (in Linux) or Image Writer
+(in Windows):
+
+  # dd if=kontron-test-image-*.wic of=TARGET_DEVICE bs=4M
+  # sync
+  # eject TARGET_DEVICE
+
+Note: Compressed images need to be unextracted before being written to a
+      device. For .xz file extensions this can be done with the xz/unxz tool.
+Note: The WIC image will complain about partition table errors when mounted.
+      The reason is that the size of the target storage device is not known at
+      build time. The problem can be fixed with the parted tool or
+      sgdisk -e TARGET_DEVICE after installing the image. The
+      kontron-test-image will do this automatically at first startup.
+
+After writing the image, boot the board from this mass storage device. When
+the boot loader starts, select the boot mode and press ENTER. The system should
+be booted to an Xfce graphical desktop.
+
+To get access to the system via ssh protocol, use the root terminal to find out
+or configure an IP address with the ifconfig command. After that, it will be
+possible to log into the system via ssh as 'root' with empty password.
+
+In case if the image is corrupted after copying it to mass storage device, try
+to clean the whole device by executing on host:
+
+  dd if=/dev/zero of=TARGET_DEVICE bs=1M
+  NOTE: all information on TARGET_DEVICE will be erased!
+
+
+Installation to persistent storage
+----------------------------------
+
+In order to install Yocto Linux BSP to persistent storage, proceed with the
+following steps:
+
+1. Prepare a HDD or USB storage with at least 8 GB of free space. eMMC device
+on module can be used too.
+
+2. Boot the board with BSP image from external storage with bootable image
+(see the previous chapter).
+
+3. When the boot loader starts, select the install mode and press ENTER.
+
+4. The installer starts immediately upon entering the console. Please follow
+on-screen instructions.
+
+5. After the installation is finished, remove the boot device from the board
+and reboot it.
+
+6. Use root account with empty password to login.
+
+
+KEAPIv3 support:
+----------------
+
+The KEAPI library provides unified interface to hardware drivers and
+OS-independent API to get platform information. KEAPI is distributed as source
+code with the code available from github:
+
+  https://github.com/kontron/keapi
+
+KEAPI library provides a set of functions for
+ - Obtaining basic information about the system
+ - Performance control
+ - Peripheral devices monitoring (hard disks, network, PCI devices)
+ - Sensors (temperature, voltage, fans) monitoring
+ - Power monitoring (batteries)
+ - Display (backlight) control
+ - Access to EEPROM user storage area(s)
+ - Serial bus (I2C, SMBus, SPI) communication
+ - Hardware Watchdog Timer
+
+KEAPI is compliant and includes wrapper implementation for
+(https://www.picmg.org/wp-content/uploads/COM_EAPI_R1_0.pdf) and JIDA32 (v1.9a
+or above).
+
+Kontron EAPI is a layer between OS/hardware drivers and user application. KEAPI
+is a pure library so multiple applications can use it simultaneously. Most of
+the API calls are thread-safe except those API to device drivers which require
+single-thread access (explicitly noted in specific platform documentation).
+KEAPI is available as C/C++ library set with corresponding C-header files:
+ - KEAPI is defined in keapi.h
+ - PICMG EAPI is defined in EApi.h
+ - Jida32 interfaces are defined in Jida.h
+Applications written in High Level Languages (C#, Java) can use bindings
+(Native Methods, JNI) to the library.
+
+KEAPI delivery consists of:
+ - KEAPI SDK - library and C/C++ interface headers for dynamically and static
+   linking with applications
+ - KEAPI configuration files - BSP specific configuration files
+ - KEAPI documentation
+ - KEAPI tool - command-line tool to run and inspect result of KEAPI calls
+
+KEAPI library is preinstalled to /usr/lib or /usr/lib64 (for x86-64 multilib
+hardware platforms). The C/C++ interfaces are preinstalled to
+/usr/include/keapi, /usr/include/eapi and /usr/include/jida.
+ - C/C++ applications have to be linked with KEAPI using -lkeapi linker switch.
+ - C/C++ applications have to be linked with JIDA32 API using -lJida linker
+   switch.
+ - C/C++ applications have to be linked with PICMG EAPI using -lEApi linker
+   switch.
+
+Documentation for the library contains 2 parts:
+ - Kontron EAPI documentation - is pre installed to /usr/share/doc/keapi/
+   directory. Contains the revision history, general information, end user
+   license agreement, Kontron EAPI release notes, etc.
+ - BSP specific documentation - is pre installed to
+   /usr/share/doc/keapi_config/ directory. Contains description of
+   configuration files, end user license agreement, BSP release notes, etc.
+
+For further information, please refer to the documentation provided with the
+libkeapi package:
+ - Software specification for Kontron EAPI Version 3.0
+ - Kontron EAPI for Linux. Application Note.
+
+Handling KEAPI configuration
+----------------------------
+
+Kontron KEAPI3 library is just a wrapper for underlying API provided by Linux
+kernel and system libraries. And it can be easily adjusted to particular
+hardware and software environment via configuration files in /etc/keapi
+directory.
+
+Out of box, the meta-kontron layer tries to configure KEAPI library
+automatically. This behavior is controlled by /etc/keapi/update_keapi.conf
+configuration file which is provided by recipes-keapi/keapi-config/ package. In
+particular, following variables are defined:
+
+  DISABLE_CONF_UPDATE: disables the automatic update of KEAPI configuration
+  files after boot;
+
+  UPDATE_ON_EVERY_STARTUP: enables the automatic update on every startup.
+  Otherwise configs will be generated only once;
+
+  UPDATE_*_CONF*: enables/disables automatic update of specific configuration
+  file;
+
+  SMBUS_USE_LEGACY: defines which SMBus driver to use:
+         x either a legacy i2c-i801, which directly accesses registers of the
+           controller,
+         x or a modern i2c-scmi, which is just a wrapper for ACPI methods;
+
+  I2C_ADD_ALL_BUSES: defines whether only "external" I2C bus, which is routed
+  to B33 and B34 pins of COMe connector, should be visible/accessible via
+  KEAPI, or other buses like LVDS_I2C(A83, A84), VGA_I2C(B95, B96) and
+  "internal" buses which are not routed to the COMe connector.
+
+In case if automatic configuration does not work out of box:
+ - either "static" configs which are provided by
+   recipes-keapi/keapi-config/keapi-config-{come,smarc} and
+   meta-kontron-BSP/recipes-bsp/keapi-config packages should be used;
+ - or these "static" configs should be created/adjusted manually according to
+   instructions provided with KEAPI - see
+   /usr/share/doc/keapi/CONFIGURATION_FILES_FORMAT which is provided by a
+   recipes-keapi/libkeapi3 package.
+
+Copyright (C) 2014-2022, Kontron

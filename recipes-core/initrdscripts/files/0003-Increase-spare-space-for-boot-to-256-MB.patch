@@ -1,0 +1,32 @@
+From cd15637da5b0b10557d504bcce0e353422a4c0b7 Mon Sep 17 00:00:00 2001
+From: Michael Brunner <michael.brunner@kontron.com>
+Date: Wed, 2 Sep 2020 16:43:14 +0200
+Subject: [PATCH] Increase spare space for /boot to 256 MB
+
+Additional space is necessary for /boot to temporarly also store EFI
+capsule files.
+
+Signed-off-by: Michael Brunner <michael.brunner@kontron.com>
+---
+ init-install-efi.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/init-install-efi.sh b/init-install-efi.sh
+index cb99815042..2879265ca6 100644
+--- a/init-install-efi.sh
++++ b/init-install-efi.sh
+@@ -18,9 +18,9 @@ fi
+ if [ -e /run/media/$1/initrd ]; then
+     boot_size=$(( boot_size - $( du -ms /run/media/$1/initrd | awk '{print $1}') ))
+ fi
+-# add 10M to provide some extra space for users and account
++# add 256M to provide some extra space for users, account and efi updates
+ # for rounding in the above subtractions
+-boot_size=$(( boot_size + 10 ))
++boot_size=$(( boot_size + 256 ))
+ 
+ # 5% for swap
+ swap_ratio=5
+-- 
+2.25.1
+

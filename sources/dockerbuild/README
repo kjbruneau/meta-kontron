@@ -1,0 +1,51 @@
+Yocto BSP build process with Docker
+===================================
+
+Prerequisites
+-------------
+
+Docker has to be installed and properly configured.
+Add your local user to group "docker" to be able to use it as user.
+
+Configuration
+-------------
+
+All necessary configuration can be done in the file project.conf using the
+following parameters:
+
+PROJECT             Name which will be used as the tag for the docker container.
+LOCAL_PROJECT_DIR   Path to the directory that contains the project data on the
+                    host system. It will be mounted to /home/dev/project
+                    in the container.
+LOCAL_BUILD_DIR     Additional directory that will be mounted to
+                    /home/dev/builddirs within the container.
+                    This directory can be used as mountpoint for a big
+                    file system that is supposed to be used for the Yocto build
+                    directory.
+SSH_AUTHORIZED_KEYS File containing public SSH keys authorized to access the
+                    Yocto build system.
+
+Starting a container
+--------------------
+
+Execute: $ ./init-docker.sh
+
+This will build a ready to be used image. If configured, mount external
+directories to the container, start it and attach to the console as user.
+
+During build an SSH key is generated and the public key shown on startup. This
+key can be used to authenticate at external services (e.g. github) during
+build time for fully autonomous builds.
+
+The container is also accessible through SSH with the address shown at the
+first startup. The user to be used and the password is shown during startup and
+usually dev (PWD: dev). This user is also registered for sudo and
+therefore able to modify the container if necessary.
+
+Please note that all modifications to the container are reverted when
+init-docker.sh is executed again. Also those modifications cannot be saved
+together with the project and can cause build issues if the project is used at
+a different host. Therefore the Dockerfile should always be directly modified
+and the container rebuilt, so the change is reproducible.
+
+(C) 2017-2018 Kontron Europe GmbH

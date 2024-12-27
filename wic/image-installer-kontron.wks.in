@@ -1,0 +1,12 @@
+# create an installer disk image
+# populate content to install using IMAGE_BOOT_FILES
+
+# In case if a bigger fat partition is needed for installer image this can be
+# done by adding "--fixed-size 500" to the "part /boot ..." line.
+# This will create 500MB partition.
+
+part /boot --source bootimg-efi-kontron --sourceparams="loader=${EFI_PROVIDER},title1=boot,label1=boot,title2=install,label2=install-efi,initrd=microcode.cpio;${INITRD_IMAGE_LIVE}-${MACHINE}.${INITRAMFS_FSTYPES}" --ondisk sda --label install --active --align 1024 --use-uuid
+
+part / --source bootimg-partition --ondisk sda --fstype=ext4 --label image --use-uuid --align 1024
+
+bootloader --ptable gpt --timeout=5 --append=" rootwait "

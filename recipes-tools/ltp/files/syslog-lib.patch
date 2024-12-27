@@ -1,0 +1,11 @@
+--- a/testcases/kernel/syscalls/syslog/syslog-lib.sh
+--- b/testcases/kernel/syscalls/syslog/syslog-lib.sh
+@@ -118,6 +118,6 @@
+ 
+ 	if [ -n "$SYSLOG_DAEMON" ]; then
+-		restart_daemon $SYSLOG_DAEMON
++		/etc/init.d/syslog restart
+ 		if [ $? -eq 0 ]; then
+ 			# XXX: this really shouldn't exist; if *syslogd isn't
+ 			# ready once the restart directive has been issued,
+

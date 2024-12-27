@@ -1,0 +1,17 @@
+gpio-test 1.2 - 14.06.2019
+
+* Increased max. IOs
+* Added flipio parameter to reverse line IO direction
+* Some fixes
+
+gpio-test 1.1 - 08.08.2018
+
+ * Added ping-pong event test
+
+
+gpio-test 1.0 - 06.02.2018
+
+ * Initial revision
+
+
+Copyright (C) 2019, Kontron Europe GmbH

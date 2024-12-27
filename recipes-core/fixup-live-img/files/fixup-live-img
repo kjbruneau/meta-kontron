@@ -1,0 +1,27 @@
+#! /bin/sh
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+# Check if we are on a live image - otherwise exit silently
+ROOTPART=`mount | grep "/rootfs.img on /" \
+    | sed -e "s|/run/media/\(.*\)/rootfs.img.*|\1|"`
+test -z "$ROOTPART" && exit 0
+
+ROOTDEV=`echo $ROOTPART | sed \
+    -e "s|\(nvme[0-9]*n[0-9]*\)p1|\1|" \
+    -e "s|\(sd[a-z]\)1|\1|" \
+    -e "s|\(mmcblk[0-9]*\)p1|\1|"`
+
+if test "$ROOTDEV" = "$ROOTPART" ; then
+    # Plain image without partition table or unknown device - exit
+    exit 0
+fi
+
+if ! sgdisk -P -v $D/dev/$ROOTDEV | grep -q "secondary header's self-pointer" ; then
+    # GPT header does not need to be fixed - exit
+    exit 0
+fi
+
+echo "Fixing GPT partition table!"
+
+sgdisk -e $D/dev/$ROOTDEV

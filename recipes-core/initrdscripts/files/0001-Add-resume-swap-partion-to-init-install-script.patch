@@ -1,0 +1,75 @@
+From 5f8e80114322b3c7455fd952508a6b03f43e52de Mon Sep 17 00:00:00 2001
+From: Michael Brunner <michael.brunner@kontron.com>
+Date: Fri, 23 Nov 2018 11:25:39 +0100
+Subject: [PATCH 1/2] Add resume swap partion to init-install script
+
+This is an updated the script originally done by
+Edgar Cherkasov <echerkasov@dev.rtsoft.ru>
+
+This should be more likely to create a hibernate supporting
+configuration.
+---
+ .../initrdscripts/files/init-install.sh            | 29 +++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/meta/recipes-core/initrdscripts/files/init-install.sh b/meta/recipes-core/initrdscripts/files/init-install.sh
+index e715796..605010f 100644
+--- a/init-install.sh
++++ b/init-install.sh
+@@ -153,9 +153,30 @@ else
+     bios_boot_size=2
+ fi
+ 
++# Get RAM total size (in kB)
++ram_total=$(cat /proc/meminfo | grep 'MemTotal:' | awk '{print $2}')
++ram_total=$(($ram_total*1024/1000/1000))
++# Determine rootfs image size
++rootfs_img_size=$(du -m /run/media/$1/rootfs.img | awk '{print $1}')
++
++hiber_add=false
+ swap_size=$((disk_size*swap_ratio/100))
+ rootfs_size=$((disk_size-bios_boot_size-boot_size-swap_size))
+ 
++if [ ! -z $ram_total ]; then
++    if [ "$swap_size" -lt "$((ram_total+200))" ]; then
++        swap_size_tmp=$(($ram_total+200))
++        rootfs_size_tmp=$((disk_size-bios_boot_size-boot_size-swap_size_tmp))
++        if [ "$rootfs_size" -gt "$((rootfs_img_size+1000))" ]; then
++            rootfs_size=$rootfs_size_tmp
++            swap_size=$swap_size_tmp
++            hiber_add=true
++        fi
++    else
++            hiber_add=true
++    fi
++fi
++
+ boot_start=$((bios_boot_size))
+ rootfs_start=$((bios_boot_size+boot_size))
+ rootfs_end=$((rootfs_start+rootfs_size))
+@@ -298,7 +319,13 @@ echo "Preparing boot partition..."
+ if [ -f /etc/grub.d/00_header -a $grub_version -ne 0 ] ; then
+     echo "Preparing custom grub2 menu..."
+     root_part_uuid=$(blkid -o value -s PARTUUID ${rootfs})
++    swap_part_uuid=$(blkid -o value -s PARTUUID ${swap})
+     boot_uuid=$(blkid -o value -s UUID ${bootfs})
++    if [ $hiber_add == true ]; then
++        resume_cmd="resume=PARTUUID=$swap_part_uuid"
++    else
++        resume_cmd=""
++    fi
+     GRUBCFG="/boot/grub/grub.cfg"
+     mkdir -p $(dirname $GRUBCFG)
+     cat >$GRUBCFG <<_EOF
+@@ -306,7 +333,7 @@ timeout=5
+ default=0
+ menuentry "Linux" {
+     search --no-floppy --fs-uuid $boot_uuid --set root
+-    linux /$kernel root=PARTUUID=$root_part_uuid $rootwait rw $5 $3 $4 quiet
++    linux /$kernel root=PARTUUID=$root_part_uuid $resume_cmd $rootwait rw $5 $3 $4 quiet
+ }
+ _EOF
+     chmod 0444 $GRUBCFG
+-- 
+2.7.4
+

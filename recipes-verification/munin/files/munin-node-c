@@ -1,0 +1,34 @@
+#!/bin/sh                                                                       
+#                                                                               
+# start/stop munin-node.                                                
+
+INETD=/usr/sbin/munin-inetd-c
+MUNIN=/usr/sbin/munin-node-c
+PORT=4949
+BIND=0.0.0.0
+
+if ! test -x $INETD ; then                                               
+    exit 0                                                                      
+fi
+
+case "$1" in                                                                    
+    start)                                                                      
+    echo "Starting munin"                                    
+    start-stop-daemon -S -b -x $INETD ${BIND}:${PORT} ${MUNIN} > /dev/null
+    ;;                                                                          
+    stop)                                                                       
+    echo "Stopping munin"                                    
+    start-stop-daemon -K -x ${INETD} > /dev/null      
+    ;;                                                                          
+    restart)                                                                    
+    echo "Restarting munin"                                  
+    start-stop-daemon -K -x ${INETD} > /dev/null      
+    start-stop-daemon -S -b -x $INETD ${BIND}:${PORT} ${MUNIN} > /dev/null      
+    ;;                                                                          
+    *)                                                                          
+    echo "Usage: /etc/init.d/munin-node {start|stop|restart}"                        
+    exit 1                                                                      
+    ;;                                                                          
+esac
+
+exit 0

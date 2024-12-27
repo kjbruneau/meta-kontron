@@ -1,0 +1,48 @@
+From 7ea0c26d284eb241dbf1aaa74f096021a5da42fe Mon Sep 17 00:00:00 2001
+From: Michael Brunner <michael.brunner@kontron.com>
+Date: Thu, 10 Oct 2019 11:57:33 +0200
+Subject: [PATCH] smistat: Added raw SMI count output with -r option
+
+Signed-off-by: Michael Brunner <michael.brunner@kontron.com>
+---
+ smistat/smistat.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/smistat/smistat.c b/smistat/smistat.c
+index 82f3dcb..23edbab 100644
+--- a/smistat/smistat.c
++++ b/smistat/smistat.c
+@@ -28,6 +28,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/ioctl.h>
++#include <string.h>
+ 
+ #define MSR_SMI_COUNT	(0x00000034)
+ 
+@@ -84,10 +85,21 @@ static void heading(void)
+ 	printf("  Time        SMIs\n");
+ }
+ 
+-int main(void)
++int main(int argc, char *argv[])
+ {
+ 	int row = 2;
+ 
++	if (argc == 2)
++		if (strcmp("-r", argv[1]) == 0) {
++			uint64_t smicount;
++			if (readmsr(0, MSR_SMI_COUNT, &smicount) < 0) {
++				fprintf(stderr, "MSR read failed\n");
++				exit(EXIT_FAILURE);
++			}
++			printf("%" PRIu64 "\n", smicount);
++			exit(EXIT_SUCCESS);
++		}
++
+ 	if ((getuid() != 0) || (geteuid() != 0)) {
+ 		fprintf(stderr, "Need to run as root.\n");
+ 		exit(EXIT_FAILURE);
+-- 
+2.17.1
+

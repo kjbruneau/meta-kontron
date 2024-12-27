@@ -1,0 +1,25 @@
+diff --git a/testcases/commands/ade/file/file_test.sh b/testcases/commands/ade/file/file_test.sh
+index f28b0ad..d103eb4 100755
+--- a/testcases/commands/ade/file/file_test.sh
++++ b/testcases/commands/ade/file/file_test.sh
+@@ -367,7 +367,7 @@ file $LTPTMP/cprog > $LTPTMP/file.out 2>&1
+ 
+ if [ $? -eq 0 ]
+ then
+-    grep -q "ELF .*-bit $TEST_ARCH executable, .*" $LTPTMP/file.out
++    grep -q "ELF .*-bit $TEST_ARCH *executable, .*" $LTPTMP/file.out
+     if [ $? -eq 0 ]
+     then
+         $LTPBIN/tst_resm TPASS "file: Recognized ELF binary executable"
+@@ -604,6 +604,11 @@ $LTPBIN/tst_resm TINFO "TEST #10: file command recognizes $KERNEL file"
+ 
+ # Red Hat creates a user-mode-linux vmlinuz file (ends in .uml) - ignore it
+ KERNFILE=$(find /boot ! -type l -name "$KERNEL*" | grep -v '.uml' | tail -n 1)
++if [ -z "$KERNFILE" ]
++then
++    # Try alternative name
++    KERNFILE=$(find /boot ! -type l -name "bzImag*" | tail -n 1)
++fi
+ file $KERNFILE > $LTPTMP/file.out 2>&1
+ 
+ if [ $? -eq 0 ]

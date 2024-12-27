@@ -1,0 +1,18 @@
+Enable autospawn--for-root feature
+
+This allows to use pulseaudio within an only-root environment.
+
+Signed-off-by: Michael Brunner <michael.brunner@kontron.com>
+---
+diff -u a/src/pulse/client.conf.in b/src/pulse/client.conf.in 
+--- a/src/pulse/client.conf.in	2019-07-24 15:26:15.854555426 +0000
++++ b/src/pulse/client.conf.in	2019-07-24 15:26:59.472378004 +0000
+@@ -24,6 +24,7 @@
+ 
+ ; autospawn = yes
+ ; allow-autospawn-for-root = no
++allow-autospawn-for-root = yes
+ ; daemon-binary = @PA_BINARY@
+ ; extra-arguments = --log-target=syslog
+ 
+

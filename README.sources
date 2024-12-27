@@ -1,0 +1,32 @@
+The sources for the packages comprising the images shipped with this BSP can be
+found at the following location:
+
+http://downloads.yoctoproject.org/mirror/sources/
+
+The metadata used to generate the images shipped with this BSP, in addition to
+the code contained in this BSP, can be found at the following locations:
+
+Poky build system:
+    http://downloads.yoctoproject.org/releases/yocto/yocto-3.3.1/poky-hardknott-25.0.1.tar.bz2
+    git://git.yoctoproject.org/poky.git
+
+meta-intel:
+    http://git.yoctoproject.org/cgit/cgit.cgi/meta-intel/snapshot/meta-intel-15.0-hardknott-3.3.tar.gz
+    git://git.yoctoproject.org/meta-intel
+
+meta-openembedded:
+    https://github.com/openembedded/meta-openembedded/archive/aca88908fd329f5cef6f19995b072397fb2d8ec6.zip
+    git://github.com/openembedded/meta-openembedded.git
+
+meta-security:
+    http://git.yoctoproject.org/cgit.cgi/meta-security/snapshot/c6b1eec0e5e94b02160ce0ac3aa9582cbbf7b0ed.tar.bz2
+    git://git.yoctoproject.org/meta-security
+
+meta-clang:
+    https://github.com/kraj/meta-clang/archive/7ef47d048267cf755c496a3962b34314f6f1f1e1.zip
+    git://github.com/kraj/meta-clang
+
+Kontron patches and BSPs can additionally be retrieved from the Kontron
+website: http://emdcustomersection.kontron.com/
+
+Additional sources used in this BSP are added to the sources directory.

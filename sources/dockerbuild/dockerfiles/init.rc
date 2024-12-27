@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. /project.conf
+
+service ssh start || exit -1
+ifconfig eth0 | grep "inet addr" || exit -1
+echo "Default password for user $DEVUSER is \"$DEVUSER\""
+
+bash

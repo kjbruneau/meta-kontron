@@ -1,0 +1,50 @@
+Kontron Public License version 1.0 (KPL-1.0)
+
+THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS KONTRON PUBLIC 
+LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM
+CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT. 
+
+Copyright (C) Kontron AG. All Rights Reserved.
+
+Preamble
+-------------------------------------------------------------------------------
+This software contains source code provided by Kontron AG. 
+The purpose is to help software  developers doing  own implementation  in their
+applications.   The copyright of this source code belongs to Kontron AG. 
+The source code is free of charge and doesn't need a licence agreement to be 
+signed. A customer of Kontron AG is free to locally hold as many copies of this
+code as he needs. However, it is not permitted to copy the sources and 
+distribute them to 3rd party companies, except for Kontron's official sales 
+partners.
+
+Disclaimer
+-------------------------------------------------------------------------------
+Although the source code information mentioned above was carefully reviewed and
+is believed to be accurate, it is not guaranteed. 
+
+This source code is provided "as is" and without warranties as to performance
+or merchantability.
+
+Kontron may have made statements about this source code. Any such statements do 
+neither constitute warranties nor shall it be relied on by the user in deciding 
+whether to use this source code. 
+
+This source code is provided without implied warranties whatsoever. Because of
+the diversity of conditions and hardware under which this source code can be 
+used, no warranty of fitness for a particular application or purpose is offered.
+The user has to test the source code in his application thoroughly before 
+relying on it. The user must assume the entire risk of using the source code.
+
+Updates and Corrections
+-------------------------------------------------------------------------------
+Any update or correction of the source codes is done without notice. We recommend
+to check our corresponding web pages from time to time for available newer source
+code and additional information.
+
+Whenever there are failures detected or additional information is required plaese
+contact your local support channel with this information.
+
+It is our intention to improve our products and services whereever possible.
+
+Thank you!
+Your Kontron AG Support Team.

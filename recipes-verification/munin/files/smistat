@@ -1,0 +1,65 @@
+#!/usr/bin/perl -w
+# -*- perl -*-
+# vim: ft=perl : sw=4 : ts=4 : et
+
+=head1 NAME
+
+smistat - Plugin for monitoring SMIs on supported platforms
+
+=head1 USAGE
+
+This plugin is based on a modified smistat tool that accepts the
+-r parameter to output a raw SMI count.
+
+=head1 AUTHOR
+
+Copyright 2019 Michael Brunner <michael.brunner@kontron.com>
+
+=head1 LICENSE
+
+GPLv2
+
+=head1 MAGIC_MARKERS
+
+#%# family=contrib
+#%# capabilities=autoconf
+
+=cut
+
+use strict;
+
+#my $statefile = "$ENV{MUNIN_STATEFILE}";
+#my $statefile = "/tmp/smistat_state";
+my $smicount = qx(smistat -r) or die;
+#my $smicount_old = $smicount;
+#my $update_frequency = 5; # Minutes between update
+#my $smis_per_minute;
+
+if($ARGV[0] and $ARGV[0] eq "config") {
+    print "graph_title SMI rate\n";
+    print "graph_args --base 1000\n";
+    print "graph_category system\n";
+    print "smistat.label SMIs per second\n";
+    print "smistat.type DERIVE\n";
+    print "smistat.min 0\n";
+    exit 0;
+}
+
+print "smistat.value $smicount";
+
+#if (-f $statefile) {
+    #open(IN, "<$statefile") or die "Can't open $statefile for reading: $!";
+    #if (<IN> =~ /^(\d+)/) {
+        #$smicount_old = $1;
+    #}
+    #close(IN);
+#}
+
+#open (OUT, ">$statefile") or die "Can't open $statefile for writing: $!";
+#print OUT "$smicount\n";
+#close OUT;
+
+#$smis_per_minute = ($smicount - $smicount_old) / $update_frequency;
+
+#print "$smicount $smicount_old $smis_per_minute\n";
+

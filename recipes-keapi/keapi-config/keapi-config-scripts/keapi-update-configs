@@ -1,0 +1,18 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:             keapi-tweaks
+# Required-Start:
+# Required-Stop:
+# Default-Start:        S
+# Default-Stop:
+### END INIT INFO
+
+. /etc/keapi/update_keapi.conf
+
+if [ -e "$FIRST_STARTUP_FILE" ] || [ $UPDATE_ON_EVERY_STARTUP -eq 1 ] ; then
+    if [ ! $DISABLE_CONF_UPDATE -eq 1 ] ; then
+        /etc/keapi/update_keapi_conf.sh
+    fi
+
+    rm -f $FIRST_STARTUP_FILE
+fi

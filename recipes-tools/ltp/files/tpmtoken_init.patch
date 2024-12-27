@@ -1,0 +1,13 @@
+--- a/testcases/commands/tpm-tools/tpmtoken/tpmtoken_init/tpmtoken_init_tests_exp00.sh	2014-03-14 09:52:47.548548568 +0400
++++ b/testcases/commands/tpm-tools/tpmtoken/tpmtoken_init/tpmtoken_init_tests_exp00.sh	2014-03-14 09:54:23.697454175 +0400
+@@ -32,6 +32,10 @@ send "\n"
+ expect -re "Confirm password: "
+ send "\n"
+ expect timeout
++spawn tpm_restrictsrk -a
++expect -re "Enter owner password: "
++send "$OWN_PWD\n"
++expect timeout
+ 
+ set rc_list [wait -i $spawn_id]
+ set rc [lindex $rc_list {3}]

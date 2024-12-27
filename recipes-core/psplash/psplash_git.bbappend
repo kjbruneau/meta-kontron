@@ -1,0 +1,8 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+SRC_URI += "file://psplash-use-custom-colors.patch"
+
+# NB: this is only for the main logo image; if you add multiple images here,
+# poky will build multiple psplash packages with 'outsuffix' in name for
+# each of these ...
+SPLASH_IMAGES = "file://kontron-plain.png;outsuffix=default"

@@ -1,0 +1,26 @@
+From 3c168513a00069bd1480f7fb0a2a2cc19f5bb55c Mon Sep 17 00:00:00 2001
+From: dev <dev@localhost>
+Date: Thu, 24 Sep 2020 12:22:25 +0000
+Subject: [PATCH] Only gzip if bmp has actually been created
+
+This is actually a hack for missing gi/cairo/pango requirements
+
+---
+ po/make-images.sh | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/po/make-images.sh b/po/make-images.sh
+index 220526f4..f1c586b2 100755
+--- a/po/make-images.sh
++++ b/po/make-images.sh
+@@ -12,5 +12,7 @@ PYTHON3="$2"
+ install -m 0755 -d $LOCALEDIR
+ ${PYTHON3} ${MESON_SOURCE_ROOT}/po/make-images "Installing firmware update…" $LOCALEDIR ${MESON_SOURCE_ROOT}/po/LINGUAS
+ for x in ${LOCALEDIR}/*/LC_IMAGES/*.bmp ; do
+-    gzip -fn9 ${x}
++    if test -e "${x}" ; then
++        gzip -fn9 ${x}
++    fi
+ done
+-- 
+2.17.1

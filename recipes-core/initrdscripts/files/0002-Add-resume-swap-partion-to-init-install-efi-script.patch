@@ -1,0 +1,96 @@
+From 10a56687423bf518a2a007ae2b7c1e06fcdc7884 Mon Sep 17 00:00:00 2001
+From: Michael Brunner <michael.brunner@kontron.com>
+Date: Fri, 23 Nov 2018 11:28:36 +0100
+Subject: [PATCH 2/2] Add resume swap partion to init-install-efi script
+
+This is an updated the script originally done by
+Edgar Cherkasov <echerkasov@dev.rtsoft.ru>
+
+This should be more likely to create a hibernate supporting
+configuration. Also works with loader/entries based configurations.
+---
+ .../initrdscripts/files/init-install-efi.sh        | 38 ++++++++++++++++++++--
+ 1 file changed, 36 insertions(+), 2 deletions(-)
+
+diff --git a/meta/recipes-core/initrdscripts/files/init-install-efi.sh b/meta/recipes-core/initrdscripts/files/init-install-efi.sh
+index 82b0aa8..ee714f7 100644
+--- a/init-install-efi.sh
++++ b/init-install-efi.sh
+@@ -147,9 +147,28 @@ fi
+ 
+ disk_size=$(parted ${device} unit mb print | grep '^Disk .*: .*MB' | cut -d" " -f 3 | sed -e "s/MB//")
+ 
++# Get RAM total size (in kB)
++ram_total=$(cat /proc/meminfo | grep 'MemTotal:' | awk '{print $2}')
++ram_total=$(($ram_total*1024/1000/1000))
++# Determine rootfs image size
++rootfs_img_size=$(du -m /run/media/$1/rootfs.img | awk '{print $1}')
++
++hiber_add=false
+ swap_size=$((disk_size*swap_ratio/100))
+ rootfs_size=$((disk_size-boot_size-swap_size))
+ 
++if [ ! -z $ram_total ]; then
++    if [ "$swap_size" -lt "$((ram_total+200))" ]; then
++        swap_size_tmp=$(($ram_total+200))
++        rootfs_size_tmp=$((disk_size-boot_size-swap_size_tmp))
++        if [ "$rootfs_size" -gt "$((rootfs_img_size+1000))" ]; then
++            rootfs_size=$rootfs_size_tmp
++            swap_size=$swap_size_tmp
++            hiber_add=true
++        fi
++    fi
++fi
++
+ rootfs_start=$((boot_size))
+ rootfs_end=$((rootfs_start+rootfs_size))
+ swap_start=$((rootfs_end))
+@@ -246,6 +265,12 @@ cp /run/media/$1/EFI/BOOT/*.efi $EFIDIR
+ 
+ if [ -f /run/media/$1/EFI/BOOT/grub.cfg ]; then
+     root_part_uuid=$(blkid -o value -s PARTUUID ${rootfs})
++    swap_part_uuid=$(blkid -o value -s PARTUUID ${swap})
++    if [ $hiber_add == true ]; then
++        resume_cmd="resume=PARTUUID=$swap_part_uuid"
++    else
++        resume_cmd=""
++    fi
+     GRUBCFG="$EFIDIR/grub.cfg"
+     cp /run/media/$1/EFI/BOOT/grub.cfg $GRUBCFG
+     # Update grub config for the installed image
+@@ -257,11 +282,17 @@ if [ -f /run/media/$1/EFI/BOOT/grub.cfg ]; then
+     sed -i "s/ LABEL=[^ ]*/ /" $GRUBCFG
+     # Replace root= and add additional standard boot options
+     # We use root as a sentinel value, as vmlinuz is no longer guaranteed
+-    sed -i "s/ root=[^ ]*/ root=PARTUUID=$root_part_uuid rw $rootwait quiet /g" $GRUBCFG
++    sed -i "s/ root=[^ ]*/ root=PARTUUID=$root_part_uuid $resume_cmd rw $rootwait quiet /g" $GRUBCFG
+ fi
+ 
+ if [ -d /run/media/$1/loader ]; then
+     rootuuid=$(blkid -o value -s PARTUUID ${rootfs})
++    swap_part_uuid=$(blkid -o value -s PARTUUID ${swap})
++    if [ $hiber_add == true ]; then
++        resume_cmd="resume=PARTUUID=$swap_part_uuid"
++    else
++        resume_cmd=""
++    fi
+     SYSTEMDBOOT_CFGS="/boot/loader/entries/*.conf"
+     # copy config files for systemd-boot
+     cp -dr /run/media/$1/loader /boot
+@@ -274,9 +305,12 @@ if [ -d /run/media/$1/loader ]; then
+     # delete any root= strings
+     sed -i "s/ root=[^ ]*/ /" $SYSTEMDBOOT_CFGS
+     # add the root= and other standard boot options
+-    sed -i "s@options *@options root=PARTUUID=$rootuuid rw $rootwait quiet @" $SYSTEMDBOOT_CFGS
++    sed -i "s@options *@options root=PARTUUID=$rootuuid $resume_cmd rw $rootwait quiet @" $SYSTEMDBOOT_CFGS
+ fi
+ 
++echo "Adding EFI boot entry..."
++efibootmgr --create --disk ${device} --part 1 --loader /EFI/BOOT/bootx64.efi --label "Yocto"
++
+ umount /tgt_root
+ 
+ # copy any extra files needed for ESP
+-- 
+2.7.4
+

@@ -1,0 +1,135 @@
+#! /bin/bash
+
+### BEGIN INIT INFO
+# Provides:          munin-node
+# Required-Start:    $network $named $local_fs $remote_fs
+# Required-Stop:     $network $named $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop Munin-Node
+# Description:       Start/stop Munin-Node
+### END INIT INFO
+# Start script derived from Debian version
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/munin-node
+PIDFILE=/var/run/munin/munin-node.pid
+CONFFILE=/etc/munin/munin-node.conf
+DAEMON_ARGS=
+
+# Include functions
+. /etc/init.d/functions
+
+[ -r /etc/default/munin-node ] && . /etc/default/munin-node
+
+if [ ! -x $DAEMON ]; then
+	echo "Munin-Node appears to be uninstalled."
+	exit 5
+elif [ ! -e $CONFFILE ]; then
+	echo "Munin-Node appears to be unconfigured."
+	exit 6
+fi
+
+# Figure out if the pid file is in a non-standard location
+while read line; do
+	line=${line%%\#*} # get rid of comments
+	set -f
+	line=$(echo $line) # get rid of extraneous blanks
+	set +f
+	if [ "$line" != "${line#pid_file }" ]; then
+		PIDFILE=${line#pid_file }
+	fi
+done < $CONFFILE
+
+verify_superuser() {
+	action=$1
+	[ $EUID -eq 0 ] && return
+	echo "Superuser privileges required for the" \
+			"\"$action\" action."
+	exit 4
+}
+
+start() {
+	echo "Starting Munin-Node"
+	mkdir -p /var/run/munin /var/log/munin
+	chown munin:root /var/run/munin
+	chown munin:www-data /var/log/munin
+	chmod 0755 /var/run/munin
+	chmod 0755 /var/log/munin
+	start-stop-daemon --start --quiet -p $PIDFILE --exec $DAEMON $DAEMON_ARGS
+	ret=$?
+	return $ret
+}
+
+stop() {
+	local PARAM=$1
+	echo "Stopping Munin-Node"
+	start-stop-daemon $PARAM --stop --quiet -p $PIDFILE
+	ret=$?
+	[ $ret -eq 0 ] && echo "done"
+	return $ret
+}
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: /etc/init.d/munin-node" \
+			"{start|stop|restart|force-reload|try-restart}"
+	exit 2
+fi
+
+case "$1" in
+	start)
+		verify_superuser $1
+		start
+		exit $?
+		;;
+	stop)
+		verify_superuser $1
+		stop
+		exit $?
+		;;
+	restart|force-reload)
+		verify_superuser $1
+		stop --oknodo || exit $?
+		start
+		exit $?
+		;;
+	try-restart)
+		verify_superuser $1
+		if stop ; then
+			start
+			exit $?
+		fi
+		echo "Munin-Node was stopped beforehand and thus not" \
+			"restarted."
+		exit 0
+		;;
+	reload)
+		echo "The \"reload\" action is not implemented."
+		exit 3
+		;;
+	status)
+		pid=`cat $PIDFILE | tr -d '\r'`
+		status -p $PIDFILE "$MDADM" && exit 0 || exit $?
+		ret=$?
+		if [ $ret -eq 0 ]; then
+			echo "Munin-Node is running (PID: $pid)"
+			exit 0
+		elif [ $ret -eq 1 ] || [ $ret -eq 2 ]; then
+			echo "Munin-Node is dead, although $PIDFILE exists."
+			exit 1
+		elif [ $ret -eq 3 ]; then
+			echo "Munin-Node is not running."
+			exit 3
+		fi
+		echo "Munin-Node status unknown."
+		exit 4
+		;;
+	*)
+		echo "Usage: /etc/init.d/munin-node" \
+			"{start|stop|restart|force-reload|try-restart}"
+		exit 2
+		;;
+esac
+
+echo "Unexpected failure, please file a bug."
+exit 1

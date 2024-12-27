@@ -1,0 +1,13 @@
+diff --git a/Makefile b/Makefile
+index 0f4f810..95f80bf 100644
+--- a/Makefile
++++ b/Makefile
+@@ -8,7 +8,7 @@ MAN_DIR=/usr/share/man/man1
+ default : beep
+ 
+ clean :
+-	rm ${EXEC_NAME}
++	rm -f ${EXEC_NAME}
+ 
+ beep : beep.c
+ 	${CC} ${FLAGS} -o ${EXEC_NAME} beep.c

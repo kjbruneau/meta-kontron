@@ -1,0 +1,11 @@
+watchdog-test 1.1 - 06.03.2019
+
+ * Decode all possible watchdog features
+ * Show more status information
+
+watchdog-test 1.0 - 29.03.2017
+
+ * Initial revision
+
+
+Copyright (C) 2017-2019, Kontron Europe GmbH

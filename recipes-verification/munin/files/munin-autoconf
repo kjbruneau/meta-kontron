@@ -1,0 +1,66 @@
+#!/bin/sh                                                                       
+# SPDX-License-Identifier: GPL-2.0-or-later
+#                                                                               
+# start/stop munin-autoconf.                                                
+
+PLUGINS=/etc/munin/plugins
+PLUGINPOOL=/usr/share/munin/plugins
+
+detect_net_interfaces() {
+    for DEV in `find /proc/net/dev*/ -type f -printf "%f "` ; do
+        if ! test -e $PLUGINS/if_$DEV ; then
+            ln -s $PLUGINPOOL/if_ $PLUGINS/if_$DEV
+        fi
+        if ! test -e $PLUGINS/if_err_$DEV ; then
+            ln -s $PLUGINPOOL/if_err_ $PLUGINS/if_err_$DEV
+        fi
+    done
+}
+
+remove_net_interfaces() {
+    rm -f $PLUGINS/if_*
+    rm -f $PLUGINS/if_err_*
+}
+
+detect_disks() {
+    DEVICES=
+    if test -x $PLUGINPOOL/diskstat_ ; then
+        DEVICES="`$PLUGINPOOL/diskstat_ suggest`"
+    fi
+    for DEV in $DEVICES ; do
+        if ! test -e $PLUGINS/diskstat_$DEV ; then
+            ln -s $PLUGINPOOL/diskstat_ $PLUGINS/diskstat_$DEV
+        fi
+    done
+}
+
+remove_disks() {
+    rm -f $PLUGINS/diskstat_*
+}
+
+case "$1" in                                                                    
+    start)
+        echo "Starting munin-autoconf"
+        detect_net_interfaces
+        detect_disks
+    ;;                                                                          
+    stop)
+        echo "Stopping munin-autoconf"
+    ;;                                                                          
+    restart)
+        echo "Restarting munin-autoconf"
+        remove_net_interfaces
+        detect_net_interfaces
+        remove_disks
+        detect_disks
+        if test -x /etc/init.d/munin-node ; then
+            /etc/init.d/munin-node restart
+        fi
+    ;;                                                                          
+    *)                                                                          
+        echo "Usage: /etc/init.d/munin-autoconf {start|stop|restart}"
+        exit 1
+    ;;                                                                          
+esac
+
+exit 0

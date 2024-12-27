@@ -1,0 +1,22 @@
+BBPATH = "${TOPDIR}"
+BBFILES ?= ""
+
+BBLAYERS ?= " \
+  ##OEROOR##/poky-honister-26.0.0/meta \
+  ##OEROOR##/poky-honister-26.0.0/meta-poky \
+  ##OEROOR##/poky-honister-26.0.0/meta-yocto-bsp \
+  ##OEROOR##/meta-openembedded/meta-filesystems \
+  ##OEROOR##/meta-openembedded/meta-gnome \
+  ##OEROOR##/meta-openembedded/meta-multimedia \
+  ##OEROOR##/meta-openembedded/meta-networking \
+  ##OEROOR##/meta-openembedded/meta-oe \
+  ##OEROOR##/meta-openembedded/meta-perl \
+  ##OEROOR##/meta-openembedded/meta-python \
+  ##OEROOR##/meta-openembedded/meta-xfce \
+  ##OEROOR##/meta-security \
+  ##OEROOR##/meta-security/meta-tpm \
+  ##OEROOR##/meta-intel \
+  ##OEROOR##/meta-clang \
+  ##OEROOR##/meta-kontron \
+  ##OEROOR##/meta-kontron-##BSP## \
+  "

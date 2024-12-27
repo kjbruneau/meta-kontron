@@ -1,0 +1,51 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          rc.local
+# Required-Start:    $remote_fs $syslog $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Run /etc/rc.local if it exist
+### END INIT INFO
+# Start script derived from Debian version
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+# Source function library.
+. /etc/init.d/functions
+
+test -r /etc/default/rcS && . /etc/default/rcS
+
+do_start() {
+    if [ -x /etc/rc.local ]; then
+        [ "$VERBOSE" != no ] && echo -n "Running local boot scripts (/etc/rc.local) "
+        /etc/rc.local
+        ES=$?
+        if [ "$VERBOSE" != no ]; then
+            if [ $ES -eq 0 ] ; then
+                success $ES
+            else
+                failure $ES
+            fi
+        fi
+        echo
+
+        return $ES
+    fi
+}
+
+case "$1" in
+    start)
+        do_start
+        ;;
+    restart|reload|force-reload)
+        echo "Error: argument '$1' not supported" >&2
+        exit 3
+        ;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 start|stop" >&2
+        exit 3
+        ;;
+esac
